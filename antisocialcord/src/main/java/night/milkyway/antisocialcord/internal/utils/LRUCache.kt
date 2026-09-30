@@ -1,6 +1,6 @@
 package night.milkyway.antisocialcord.internal.utils
 
-class LRUCache<T>(val maxSize: Int) {
+internal class LRUCache<T>(val maxSize: Int) {
     private val internalCache: MutableMap<String, T> = object : LinkedHashMap<String, T>(0, 0.75f, true) {
   		override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, T>?): Boolean {
             return size > maxSize

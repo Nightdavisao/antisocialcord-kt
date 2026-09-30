@@ -5,5 +5,5 @@ object SocialSdkConsts {
     val DISCORD_PACKAGES = listOf("com.discord", "cocobo1.pupu.app")
     const val CLOSE_ABNORMAL = 1006
     const val INVALID_CLIENT_ID = 4000
-    const val RPC_VERSION = "1"
+    internal const val RPC_VERSION = "1"
 }

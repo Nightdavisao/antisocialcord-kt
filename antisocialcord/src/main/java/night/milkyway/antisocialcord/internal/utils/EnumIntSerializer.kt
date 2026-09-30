@@ -11,7 +11,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 
-open class EnumIntSerializer<T : Enum<T>>(
+internal open class EnumIntSerializer<T : Enum<T>>(
     private val entries: EnumEntries<T>
 ) : KSerializer<T> {
 

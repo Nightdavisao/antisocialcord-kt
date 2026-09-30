@@ -19,7 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import night.milkyway.antisocialcord.DiscordRpcClient
-import night.milkyway.antisocialcord.api.AbstractRpcHandler
+import night.milkyway.antisocialcord.api.AbstractRpcEventHandler
 import night.milkyway.antisocialcord.model.Activity
 import night.milkyway.antisocialcord.model.ActivityArguments
 import night.milkyway.antisocialcord.model.ActivityType
@@ -35,7 +35,7 @@ fun ComposeApp() {
 
     val context = LocalContext.current
     val rpcClient = DiscordRpcClient(context)
-    rpcClient.addListener(object : AbstractRpcHandler() {
+    rpcClient.addListener(object : AbstractRpcEventHandler() {
         override fun onConnected() {
             Log.d(TAG, "onConnected")
             isConnectedState = !isConnectedState

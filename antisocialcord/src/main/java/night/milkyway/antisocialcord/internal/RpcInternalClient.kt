@@ -19,9 +19,8 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.ClassDiscriminatorMode
 import kotlinx.serialization.json.Json
-import night.milkyway.antisocialcord.api.AbstractRpcHandler
+import night.milkyway.antisocialcord.api.AbstractRpcEventHandler
 import night.milkyway.antisocialcord.internal.utils.SocialSdkConsts
-import night.milkyway.antisocialcord.model.Activity
 import night.milkyway.antisocialcord.model.ActivityArguments
 import night.milkyway.antisocialcord.model.RpcCommand
 import night.milkyway.antisocialcord.model.RpcEvent
@@ -30,9 +29,9 @@ import night.milkyway.antisocialcord.model.exception.GenericSdkException
 
 open class RpcInternalClient(
     private val context: Context,
-    private val listeners: List<AbstractRpcHandler>?,
+    private val listeners: List<AbstractRpcEventHandler>?,
     private val discordPackages: List<String> = SocialSdkConsts.DISCORD_PACKAGES
-) : AbstractRpcHandler() {
+) : AbstractRpcEventHandler() {
     companion object {
         private const val TAG = "DiscordSocialSdk"
 
