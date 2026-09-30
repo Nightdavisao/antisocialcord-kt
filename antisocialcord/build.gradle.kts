@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     kotlin("plugin.serialization") version "2.4.20"
     id("org.jetbrains.dokka") version "2.2.0"
+    id("maven-publish")
 }
 
 android {
@@ -24,6 +25,11 @@ android {
         aidl = true
     }
 
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
@@ -34,4 +40,17 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
     implementation(libs.kotlinx.serialization.json)
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                from(components["release"])
+                groupId = "com.github.Nightdavisao"
+                artifactId = "antisocialcord"
+                version = "0.1"
+            }
+        }
+    }
 }

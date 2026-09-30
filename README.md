@@ -27,7 +27,7 @@ dependencyResolutionManagement {
 
 ```kotlin
 dependencies {
-    implementation("com.github.nightdavisao:antisocialcord:master-SNAPSHOT") // just an example, please use a commit hash instead (for now)
+    implementation("com.github.Nightdavisao:antisocialcord:master-SNAPSHOT") // just an example, please use a short commit hash instead (for now)
 }
 ```
 

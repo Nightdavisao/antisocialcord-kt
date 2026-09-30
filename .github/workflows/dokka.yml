@@ -3,6 +3,8 @@ name: Deploy Dokka documentation
 on:
   push:
     branches: ["master"]
+    paths:
+      - "antisocialcord/*"
   workflow_dispatch:
 
 permissions:
