@@ -62,7 +62,9 @@ data class Activity(
     @SerialName("status_display_type")
     val statusDisplayType: StatusDisplayType? = null,
     @EncodeDefault(Mode.NEVER)
-    val timestamps: ActivityTimestamps? = null
+    val timestamps: ActivityTimestamps? = null,
+    @EncodeDefault(Mode.NEVER)
+    val assets: ActivityAssets? = null
 )
 
 internal class StatusDisplayTypeSerializer : EnumIntSerializer<StatusDisplayType>(StatusDisplayType.entries)

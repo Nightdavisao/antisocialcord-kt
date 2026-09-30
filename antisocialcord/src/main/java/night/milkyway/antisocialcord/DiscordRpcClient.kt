@@ -54,6 +54,12 @@ class DiscordRpcClient(
     }
 
     /**
+     * Whether the connection is ready
+     */
+    val isConnectionReady: Boolean
+        get() = client.isConnectionReady
+
+    /**
      * Adds a listener to the listeners list
      * @param listener Listener handler
      */

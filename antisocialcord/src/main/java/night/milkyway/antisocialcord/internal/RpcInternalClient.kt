@@ -52,7 +52,7 @@ internal open class RpcInternalClient(
 
     private var connectionState: RpcStateConnection = RpcStateConnection.Connected
     private var readyFlag: Boolean = false
-    private val isConnectionReady: Boolean
+    val isConnectionReady: Boolean
         get() {
             return rpcConnection != null && isBound && connectionState == RpcStateConnection.Connected && readyFlag
         }
