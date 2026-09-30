@@ -4,16 +4,22 @@ import android.content.Context
 import night.milkyway.antisocialcord.api.AbstractRpcHandler
 import night.milkyway.antisocialcord.internal.utils.LRUCache
 import night.milkyway.antisocialcord.internal.RpcInternalClient
+import night.milkyway.antisocialcord.internal.utils.SocialSdkConsts
 import night.milkyway.antisocialcord.model.Activity
 import night.milkyway.antisocialcord.model.ActivityArguments
 import night.milkyway.antisocialcord.model.RpcCommand
 import night.milkyway.antisocialcord.model.RpcEvent
 import night.milkyway.antisocialcord.model.RpcPayload
+import night.milkyway.antisocialcord.model.exception.GenericSdkException
 import java.util.UUID
 
 typealias Callback = (() -> Unit)
 
-class DiscordRpcClient(context: Context, lruNonceSize: Int = 100) {
+class DiscordRpcClient(
+    context: Context,
+    lruNonceSize: Int = 100,
+    discordPackages: List<String> = SocialSdkConsts.DISCORD_PACKAGES
+) {
     private val lruNonce = LRUCache<Callback>(lruNonceSize)
 
     private class NonceCallbackListener(val lruNonce: LRUCache<Callback>) : AbstractRpcHandler() {
@@ -32,7 +38,7 @@ class DiscordRpcClient(context: Context, lruNonceSize: Int = 100) {
 
     private val listeners = mutableListOf<AbstractRpcHandler>()
 
-    private val client = RpcInternalClient(context, listeners)
+    private val client = RpcInternalClient(context, listeners, discordPackages)
 
     init {
         this.addListener(NonceCallbackListener(lruNonce))
@@ -46,10 +52,12 @@ class DiscordRpcClient(context: Context, lruNonceSize: Int = 100) {
         listeners.remove(listener)
     }
 
+    @Throws(GenericSdkException::class)
     fun connect(applicationId: Long) {
         client.connect(applicationId)
     }
 
+    @Throws(GenericSdkException::class)
     fun connect(applicationId: String) {
         this.connect(applicationId.toLong())
     }

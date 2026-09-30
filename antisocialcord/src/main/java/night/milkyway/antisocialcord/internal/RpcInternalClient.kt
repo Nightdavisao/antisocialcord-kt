@@ -30,10 +30,12 @@ import night.milkyway.antisocialcord.model.exception.GenericSdkException
 
 open class RpcInternalClient(
     private val context: Context,
-    private val listeners: List<AbstractRpcHandler>?
+    private val listeners: List<AbstractRpcHandler>?,
+    private val discordPackages: List<String> = SocialSdkConsts.DISCORD_PACKAGES
 ) : AbstractRpcHandler() {
     companion object {
         private const val TAG = "DiscordSocialSdk"
+
         @OptIn(ExperimentalSerializationApi::class)
         private val json = Json {
             encodeDefaults = true
@@ -141,6 +143,7 @@ open class RpcInternalClient(
             connectionState = RpcStateConnection.Disconnected
         }
     }
+
     private fun sendFrame(str: String) = scope.launch {
         if (!isConnectionReady) return@launch
         rpcConnection?.sendFrame(str)
@@ -152,7 +155,7 @@ open class RpcInternalClient(
     }
 
     private fun resolveServiceIntent(): Intent? {
-        SocialSdkConsts.DISCORD_PACKAGES.forEach {
+        discordPackages.forEach {
             val intent = Intent("com.discord.socialsdk.rpc.IDiscordRpcService").apply {
                 setPackage(it)
             }
