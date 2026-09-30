@@ -27,6 +27,7 @@ jobs:
         uses: actions/setup-java@v6.0.1
         with:
           java-version: 22
+          distribution: temurin
       - name: Generate docs with Dokka
         run: ./gradlew :antisocialcord:dokkaGenerate
       - name: Setup Pages
