@@ -28,7 +28,7 @@ import night.milkyway.antisocialcord.model.RpcEvent
 import night.milkyway.antisocialcord.model.RpcPayload
 import night.milkyway.antisocialcord.model.exception.GenericSdkException
 
-open class RpcInternalClient(
+internal open class RpcInternalClient(
     private val context: Context,
     private val listeners: List<AbstractRpcEventHandler>?,
     private val discordPackages: List<String> = SocialSdkConsts.DISCORD_PACKAGES,
