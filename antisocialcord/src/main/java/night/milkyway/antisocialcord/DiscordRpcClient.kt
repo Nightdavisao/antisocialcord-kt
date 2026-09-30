@@ -79,7 +79,6 @@ class DiscordRpcClient(
     }
 
     /**
-     * Connects to the Discord client via the Android binder interface (effectively binding the application context to the IPC service)
      * Shorthand for the `connect(applicationId: Long)` function.
      *
      * @param applicationId Application ID (you should be able to create one from the Discord's Developer Portal)
