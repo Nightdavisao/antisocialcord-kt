@@ -24,3 +24,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "DiscordIPCBinder"
 include(":app")
+include(":antisocialcord")
