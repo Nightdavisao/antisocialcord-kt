@@ -20,11 +20,13 @@ typealias Callback = (() -> Unit)
  *
  * @param context Android application context
  * @param lruNonceSize LRU size for temporarily storing nonces for function callbacks
+ * @param channelCapacity Channel capacity (used for queuing frames in case immediately sending them fails)
  * @param packageWhitelist Package name whitelist (by default, it should cover the official Discord package and some client mods)
  */
 class DiscordRpcClient(
     context: Context,
     lruNonceSize: Int = 100,
+    channelCapacity: Int = 50,
     packageWhitelist: List<String> = SocialSdkConsts.DISCORD_PACKAGES
 ) {
     private val lruNonce = LRUCache<Callback>(lruNonceSize)
@@ -45,7 +47,7 @@ class DiscordRpcClient(
 
     private val listeners = mutableListOf<AbstractRpcEventHandler>()
 
-    private val client = RpcInternalClient(context, listeners, packageWhitelist)
+    private val client = RpcInternalClient(context, listeners, packageWhitelist, channelCapacity = channelCapacity)
 
     init {
         this.addListener(NonceCallbackListener(lruNonce))

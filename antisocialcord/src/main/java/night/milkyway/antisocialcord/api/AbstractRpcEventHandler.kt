@@ -30,5 +30,5 @@ abstract class AbstractRpcEventHandler {
     /**
      * Emitted when the RPC client has disconnected from Discord
      */
-    open fun onDisconnected() {}
+    open fun onDisconnected(code: Int? = null) {}
 }

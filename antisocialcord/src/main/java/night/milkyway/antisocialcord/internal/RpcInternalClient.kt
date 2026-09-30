@@ -14,6 +14,7 @@ import com.discord.socialsdk.rpc.IDiscordRpcCallback
 import com.discord.socialsdk.rpc.IDiscordRpcConnection
 import com.discord.socialsdk.rpc.IDiscordRpcService
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -30,8 +31,14 @@ import night.milkyway.antisocialcord.model.exception.GenericSdkException
 open class RpcInternalClient(
     private val context: Context,
     private val listeners: List<AbstractRpcEventHandler>?,
-    private val discordPackages: List<String> = SocialSdkConsts.DISCORD_PACKAGES
+    private val discordPackages: List<String> = SocialSdkConsts.DISCORD_PACKAGES,
+    channelCapacity: Int = 50,
 ) : AbstractRpcEventHandler() {
+    private enum class RpcStateConnection {
+        Connected,
+        Disconnected
+    }
+
     companion object {
         private const val TAG = "DiscordSocialSdk"
 
@@ -52,6 +59,7 @@ open class RpcInternalClient(
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val mutex = Mutex()
+    private val channel = Channel<RpcPayload>(channelCapacity)
     private var isBound: Boolean = false
     private var pendingApplicationId: Long? = null
     private var rpcService: IDiscordRpcService? = null
@@ -77,10 +85,7 @@ open class RpcInternalClient(
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
-            this@RpcInternalClient.let {
-                Log.d(TAG, "CLOSE_ABNORMAL, service disconnected")
-                onDisconnected()
-            }
+            onDisconnected(SocialSdkConsts.CLOSE_ABNORMAL)
         }
     }
     private val callback: IDiscordRpcCallback = object : IDiscordRpcCallback.Stub() {
@@ -89,12 +94,10 @@ open class RpcInternalClient(
                 return
             }
             try {
-                Log.d(TAG, "onFrame: $str")
                 val frame = json.decodeFromString(RpcPayload.serializer(), str)
-                Log.d(TAG, "onFrame: $frame")
 
                 when (frame.command) {
-                    RpcCommand.DISPATCH -> onDispatch(frame)
+                    RpcCommand.DISPATCH -> onDispatch(frame) // this returns a mocked user, discord doesn't return the actual user
                     RpcCommand.SET_ACTIVITY -> onSetActivity(
                         frame.args as ActivityArguments?, frame.event, frame.nonce
                     )
@@ -137,7 +140,7 @@ open class RpcInternalClient(
                 rpcConnection?.disconnect()
                 context.unbindService(serviceConnection)
                 onDisconnected()
-            } catch (e: RemoteException) {
+            } catch (_: RemoteException) {
                 // noop
             }
             connectionState = RpcStateConnection.Disconnected
@@ -150,8 +153,16 @@ open class RpcInternalClient(
     }
 
     fun sendSerializedFrame(framePayload: RpcPayload) {
-        val frame = json.encodeToString(framePayload)
-        this.sendFrame(frame)
+        try {
+            val frame = json.encodeToString(framePayload)
+            this.sendFrame(frame)
+        } catch (_: Exception) {
+            if (connectionState != RpcStateConnection.Connected) return
+
+            scope.launch {
+                channel.send(framePayload)
+            }
+        }
     }
 
     private fun resolveServiceIntent(): Intent? {
@@ -169,6 +180,16 @@ open class RpcInternalClient(
     override fun onReady(payload: RpcPayload) {
         readyFlag = true
         listeners?.forEach { it.onReady(payload) }
+
+        // i don't know about rate limits
+        scope.launch {
+            var receivedFrame = channel.tryReceive().getOrNull()
+
+            while (receivedFrame != null) {
+                sendSerializedFrame(receivedFrame)
+                receivedFrame = channel.tryReceive().getOrNull()
+            }
+        }
     }
 
     override fun onDispatch(payload: RpcPayload) {
@@ -186,7 +207,7 @@ open class RpcInternalClient(
         listeners?.forEach { it.onConnected() }
     }
 
-    override fun onDisconnected() {
+    override fun onDisconnected(code: Int?) {
         rpcService = null
         rpcConnection = null
         readyFlag = false
@@ -195,7 +216,3 @@ open class RpcInternalClient(
     }
 }
 
-enum class RpcStateConnection {
-    Connected,
-    Disconnected
-}

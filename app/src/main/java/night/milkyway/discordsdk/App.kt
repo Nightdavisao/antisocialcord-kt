@@ -41,7 +41,7 @@ fun ComposeApp() {
             isConnectedState = !isConnectedState
         }
 
-        override fun onDisconnected() {
+        override fun onDisconnected(code: Int?) {
             Log.d(TAG, "onDisconnected")
             isConnectedState = !isConnectedState
         }
