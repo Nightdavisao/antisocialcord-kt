@@ -136,6 +136,7 @@ open class RpcInternalClient(
                 pendingApplicationId = null
                 rpcConnection?.disconnect()
                 context.unbindService(serviceConnection)
+                onDisconnected()
             } catch (e: RemoteException) {
                 // noop
             }
@@ -155,7 +156,7 @@ open class RpcInternalClient(
 
     private fun resolveServiceIntent(): Intent? {
         discordPackages.forEach {
-            val intent = Intent("com.discord.socialsdk.rpc.IDiscordRpcService").apply {
+            val intent = Intent(SocialSdkConsts.INTENT_ACTION).apply {
                 setPackage(it)
             }
             if (context.packageManager.resolveService(intent, 0) != null) {
