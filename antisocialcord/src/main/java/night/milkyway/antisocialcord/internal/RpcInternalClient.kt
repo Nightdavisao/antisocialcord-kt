@@ -15,8 +15,6 @@ import com.discord.socialsdk.rpc.IDiscordRpcConnection
 import com.discord.socialsdk.rpc.IDiscordRpcService
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.ClassDiscriminatorMode
 import kotlinx.serialization.json.Json
@@ -58,7 +56,6 @@ internal open class RpcInternalClient(
         }
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private val mutex = Mutex()
     private val channel = Channel<RpcPayload>(channelCapacity)
     private var isBound: Boolean = false
     private var pendingApplicationId: Long? = null
@@ -112,39 +109,35 @@ internal open class RpcInternalClient(
         }
     }
 
-    fun connect(applicationId: Long) = scope.launch {
-        mutex.withLock {
-            pendingApplicationId = applicationId
-            val serviceResolution = resolveServiceIntent() ?: throw GenericSdkException(
-                "Either the Discord app is not installed, or you forgot to add the intent-filter to AndroidManifest.xml",
-                SocialSdkConsts.INVALID_CLIENT_ID
+    fun connect(applicationId: Long) {
+        pendingApplicationId = applicationId
+        val serviceResolution = resolveServiceIntent() ?: throw GenericSdkException(
+            "Either the Discord app is not installed, or you forgot to add the intent-filter to AndroidManifest.xml",
+            SocialSdkConsts.INVALID_CLIENT_ID
+        )
+
+        isBound =
+            context.bindService(serviceResolution, this@RpcInternalClient.serviceConnection, 1)
+        if (!isBound) {
+            throw GenericSdkException(
+                "isBound returned false (when trying to bind the application context to the service)",
+                SocialSdkConsts.CLOSE_ABNORMAL
             )
-
-            isBound =
-                context.bindService(serviceResolution, this@RpcInternalClient.serviceConnection, 1)
-            if (!isBound) {
-                throw GenericSdkException(
-                    "isBound returned false (when trying to bind the application context to the service)",
-                    SocialSdkConsts.CLOSE_ABNORMAL
-                )
-            }
-
-            connectionState = RpcStateConnection.Connected
         }
+
+        connectionState = RpcStateConnection.Connected
     }
 
-    fun disconnect() = scope.launch {
-        mutex.withLock {
-            try {
-                pendingApplicationId = null
-                rpcConnection?.disconnect()
-                context.unbindService(serviceConnection)
-                onDisconnected()
-            } catch (_: RemoteException) {
-                // noop
-            }
-            connectionState = RpcStateConnection.Disconnected
+    fun disconnect() {
+        try {
+            pendingApplicationId = null
+            rpcConnection?.disconnect()
+            context.unbindService(serviceConnection)
+            onDisconnected()
+        } catch (_: RemoteException) {
+            // noop
         }
+        connectionState = RpcStateConnection.Disconnected
     }
 
     private fun sendFrame(str: String) = scope.launch {
