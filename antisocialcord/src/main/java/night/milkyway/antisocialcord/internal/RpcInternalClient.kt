@@ -69,14 +69,18 @@ internal open class RpcInternalClient(
                 rpcService = IDiscordRpcService.Stub.asInterface(service)
                 val applicationId = pendingApplicationId
 
-                if (applicationId != null) {
-                    rpcConnection =
-                        rpcService?.connect(
-                            applicationId,
-                            SocialSdkConsts.RPC_VERSION,
-                            callback
-                        )
-                    onConnected()
+                try {
+                    if (applicationId != null) {
+                        rpcConnection =
+                            rpcService?.connect(
+                                applicationId,
+                                SocialSdkConsts.RPC_VERSION,
+                                callback
+                            )
+                        onConnected()
+                    }
+                } catch(_: RemoteException) {
+                    this.disconnect()
                 }
             }
         }
@@ -129,11 +133,11 @@ internal open class RpcInternalClient(
     }
 
     fun disconnect() {
+        onDisconnected()
         try {
             pendingApplicationId = null
             rpcConnection?.disconnect()
             context.unbindService(serviceConnection)
-            onDisconnected()
         } catch (_: RemoteException) {
             // noop
         }
