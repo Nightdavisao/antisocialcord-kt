@@ -38,4 +38,4 @@ dependencies {
 
 ## Projects using antisocialcord
 
-soon tm
+* [Navic](https://github.com/ssalggnikool/Navic): Subsonic music streaming app for Android
