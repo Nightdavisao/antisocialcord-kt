@@ -38,4 +38,5 @@ dependencies {
 
 ## Projects using antisocialcord
 
-* [Navic](https://github.com/ssalggnikool/Navic): Subsonic music streaming app for Android
+* [Navic](https://codeberg.org/paige/Navic): Subsonic music streaming app for Android
+* [listencord](https://github.com/DevMatei/listencord): shows what you're listening to on your phone as discord rich presence. pick which apps it watches, it picks up whatever they're playing and puts it on your profile
